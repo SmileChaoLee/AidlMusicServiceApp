@@ -14,19 +14,19 @@ import com.smile.aidlserviceapp.aidl.IMusicAidlInterface
 class MusicService : Service() {
     companion object {
         private const val TAG : String = "MusicService"
-        private var isMusicLoaded : Boolean = false
-        private var isMusicPlaying : Boolean = false
     }
     private var mediaPlayer : MediaPlayer? = null
 
     private val binder = object : IMusicAidlInterface.Stub() {
+        var isLoaded : Boolean = false
+        var isPlaying : Boolean = false
         override fun playMusic(): Int {
             var result: Int = Constants.ErrorCode
             mediaPlayer?.let {
-                if (!it.isPlaying) {
+                if (!isPlaying) {
                     it.start()
                     result = Constants.MusicPlaying
-                    MusicService.isMusicPlaying = true
+                    isPlaying = true
                 }
             }
             Log.d(TAG, "playMusic.result = $result")
@@ -37,11 +37,11 @@ class MusicService : Service() {
             var result = Constants.ErrorCode
             mediaPlayer?.let {
                 Log.d(TAG, "mediaPlayer not null")
-                if (it.isPlaying) {
+                if (isPlaying) {
                     Log.d(TAG,"mediaPlayer.isPlaying() is true")
                     it.pause()
                     result = Constants.MusicPaused
-                    MusicService.isMusicPlaying = false
+                    isPlaying = false
                 }
             }
             Log.d(TAG, "pauseMusic.result = $result")
@@ -53,14 +53,14 @@ class MusicService : Service() {
             mediaPlayer?.let {
                 it.stop()
                 result = Constants.MusicStopped
-                MusicService.isMusicPlaying = false
+                isPlaying = false
             }
             Log.d(TAG, "stopMusic.result = $result")
             broadcastResult(result)
             return result
         }
-        override fun isMusicLoaded(): Boolean = MusicService.isMusicLoaded
-        override fun isMusicPlaying(): Boolean = MusicService.isMusicPlaying
+        override fun isMusicLoaded(): Boolean = isLoaded
+        override fun isMusicPlaying(): Boolean = isPlaying
     }
 
     override fun onCreate() {
@@ -88,7 +88,7 @@ class MusicService : Service() {
     }
 
     private fun loadMusic(): Int {
-        isMusicPlaying = false
+        binder.isPlaying = false
         var result = Constants.ErrorCode
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(applicationContext, R.raw.music_a)
@@ -96,7 +96,7 @@ class MusicService : Service() {
         mediaPlayer?.let {
             it.isLooping = true
             result = Constants.MusicLoaded
-            isMusicLoaded = true
+            binder.isLoaded = true
         }
         Log.d(TAG, "loadMusic.result = $result")
         return result

@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.IBinder.DeathRecipient
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -83,9 +82,9 @@ class MainActivity : AppCompatActivity() {
                             binding.playButton.isEnabled = false
                             binding.pauseButton.isEnabled = false
                             myBoundService?.let {
-                                if (it.isMusicLoaded()) {
-                                    binding.playButton.isEnabled = !it.isMusicPlaying()
-                                    binding.pauseButton.isEnabled = it.isMusicPlaying()
+                                if (it.isMusicLoaded) {
+                                    binding.playButton.isEnabled = !it.isMusicPlaying
+                                    binding.pauseButton.isEnabled = it.isMusicPlaying
                                 }
                             }
                         }
@@ -168,9 +167,9 @@ class MainActivity : AppCompatActivity() {
                 binding.playButton.isEnabled = false
                 binding.pauseButton.isEnabled = false
                 myBoundService?.let {
-                    if (it.isMusicLoaded()) {
-                        binding.playButton.isEnabled = !it.isMusicPlaying()
-                        binding.pauseButton.isEnabled = it.isMusicPlaying()
+                    if (it.isMusicLoaded) {
+                        binding.playButton.isEnabled = !it.isMusicPlaying
+                        binding.pauseButton.isEnabled = it.isMusicPlaying
                     }
                 }
             }
