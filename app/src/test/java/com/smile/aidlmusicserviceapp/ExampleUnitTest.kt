@@ -1,4 +1,4 @@
-package com.smile.aidlserviceapp
+package com.smile.aidlmusicserviceapp
 
 import org.junit.Test
 

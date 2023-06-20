@@ -1,4 +1,4 @@
-package com.smile.aidlserviceapp;
+package com.smile.aidlmusicserviceapp;
 
 public class Constants {
     public static final String ServiceName = "com.smile.aidlserviceapp.MusicService";

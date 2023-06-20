@@ -1,4 +1,4 @@
-package com.smile.aidlserviceapp
+package com.smile.aidlmusicserviceapp
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

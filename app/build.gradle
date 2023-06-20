@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.smile.aidlserviceapp'
+    namespace 'com.smile.aidlmusicserviceapp'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.smile.aidlserviceapp"
+        applicationId "com.smile.aidlmusicserviceapp"
         minSdk 31
         targetSdk 33
         versionCode 1

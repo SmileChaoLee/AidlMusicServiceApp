@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">AidlServiceApp</string>
+    <string name="app_name">AidlMusicServiceApp</string>
+    <string name="title_text">Bound Service (AIDL)</string>
+    <string name="company_name">Smile Information Inc.</string>
+    <string name="bind_service_text">Bind Service</string>
+    <string name="unbind_service_text">Unbind Service</string>
+    <string name="play_music_text">Play Music</string>
+    <string name="pause_music_text">Pause Music</string>
+    <string name="exit_bound_service_text">Exit BoundService</string>
 </resources>

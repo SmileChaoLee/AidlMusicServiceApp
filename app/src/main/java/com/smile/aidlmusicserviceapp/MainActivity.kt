@@ -1,4 +1,4 @@
-package com.smile.aidlserviceapp
+package com.smile.aidlmusicserviceapp
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -9,13 +9,14 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.os.IBinder.DeathRecipient
+import android.os.RemoteException
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.smile.aidlserviceapp.aidl.IMusicAidlInterface
-import com.smile.aidlserviceapp.aidlservice.MusicService
-import com.smile.aidlserviceapp.databinding.ActivityMainBinding
+import com.smile.aidlmusicserviceapp.aidlservice.MusicService
+import com.smile.aidlmusicserviceapp.databinding.ActivityMainBinding
+
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -23,8 +24,61 @@ class MainActivity : AppCompatActivity() {
     }
     private lateinit var binding : ActivityMainBinding
     private lateinit var receiver: BroadcastReceiver
+
+    private val serviceCallback = object : IMusicServiceCallback.Stub() {
+        override fun valueChanged(value: Int) {
+            Log.d(TAG, "serviceCallback.valueChanged.value = $value")
+            binding.serverText.text = when (value) {
+                Constants.ServiceStarted -> {
+                    Log.d(TAG, "serviceCallback.ServiceStarted received")
+                    "ServiceStarted received"
+                }
+
+                Constants.ServiceBound -> {
+                    Log.d(TAG, "serviceCallback.ServiceBound received")
+                    "ServiceBound received"
+                }
+
+                Constants.ServiceUnbound -> {
+                    Log.d(TAG, "serviceCallback.ServiceUnbound received")
+                    "ServiceUnbound received"
+                }
+
+                Constants.ServiceStopped -> {
+                    Log.d(TAG, "serviceCallback.ServiceStopped received")
+                    "ServiceStopped received"
+                }
+
+                Constants.MusicPlaying -> {
+                    Log.d(TAG, "serviceCallback.MusicPlaying received")
+                    "MusicPlaying received"
+                }
+
+                Constants.MusicPaused -> {
+                    Log.d(TAG, "serviceCallback.MusicPaused received")
+                    "MusicPaused received"
+                }
+
+                Constants.MusicStopped -> {
+                    Log.d(TAG, "serviceCallback.MusicStopped received")
+                    "MusicStopped received"
+                }
+
+                Constants.MusicLoaded -> {
+                    Log.d(TAG, "serviceCallback.MusicLoaded received")
+                    "MusicLoaded received"
+                }
+
+                else -> {
+                    Log.d(TAG, "serviceCallback.Unknown message.")
+                    "Unknown message."
+                }
+            }
+        }
+    }
+
     private var isServiceBound = false
-    private var myBoundService: IMusicAidlInterface? = null
+    private var myBoundService: IMusicService? = null
     private lateinit var deathRecipient: DeathRecipient
     private lateinit var myServiceConnection: ServiceConnection
 
@@ -45,11 +99,13 @@ class MainActivity : AppCompatActivity() {
                 myBoundService?.playMusic()
             }
         }
+        binding.playButton.isEnabled = false
         binding.pauseButton.setOnClickListener {
             if (isServiceBound) {
                 myBoundService?.pauseMusic()
             }
         }
+        binding.pauseButton.isEnabled = false
         binding.exitBoundService.setOnClickListener {
             finish()
         }
@@ -66,7 +122,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d(TAG, "onReceive.result = $result")
                     when (result) {
                         Constants.ServiceStarted -> {
-                            Log.d(TAG, "ServiceStarted received")
+                            Log.d(TAG, "onReceive.ServiceStarted received")
                             binding.messageText.text = "BoundService started."
                             binding.bindServiceButton.isEnabled = true
                             binding.unbindServiceButton.isEnabled = false
@@ -75,22 +131,16 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Constants.ServiceBound -> {
-                            Log.d(TAG, "ServiceBound received")
+                            Log.d(TAG, "onReceive.ServiceBound received")
                             binding.messageText.text = "BoundService Bound."
                             binding.bindServiceButton.isEnabled = false
                             binding.unbindServiceButton.isEnabled = true
-                            binding.playButton.isEnabled = false
+                            binding.playButton.isEnabled = true
                             binding.pauseButton.isEnabled = false
-                            myBoundService?.let {
-                                if (it.isMusicLoaded) {
-                                    binding.playButton.isEnabled = !it.isMusicPlaying
-                                    binding.pauseButton.isEnabled = it.isMusicPlaying
-                                }
-                            }
                         }
 
                         Constants.ServiceUnbound -> {
-                            Log.d(TAG, "ServiceUnbound received")
+                            Log.d(TAG, "onReceive.ServiceUnbound received")
                             binding.messageText.text = "BoundService unbound."
                             binding.bindServiceButton.isEnabled = true
                             binding.unbindServiceButton.isEnabled = false
@@ -99,7 +149,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Constants.ServiceStopped -> {
-                            Log.d(TAG, "ServiceStopped received")
+                            Log.d(TAG, "onReceive.ServiceStopped received")
                             binding.messageText.text = "BoundService stopped."
                             binding.bindServiceButton.isEnabled = false
                             binding.unbindServiceButton.isEnabled = false
@@ -108,7 +158,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Constants.MusicPlaying -> {
-                            Log.d(TAG, "MusicPlaying received")
+                            Log.d(TAG, "onReceive.MusicPlaying received")
                             binding.messageText.text = "Music playing."
                             if (isServiceBound) {
                                 binding.playButton.isEnabled = false
@@ -117,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Constants.MusicPaused -> {
-                            Log.d(TAG, "MusicPaused received")
+                            Log.d(TAG, "onReceive.MusicPaused received")
                             binding.messageText.text = "Music paused."
                             if (isServiceBound) {
                                 binding.playButton.isEnabled = true
@@ -126,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Constants.MusicStopped -> {
-                            Log.d(TAG, "MusicStopped received")
+                            Log.d(TAG, "onReceive.MusicStopped received")
                             binding.messageText.text = "Music stopped."
                             if (isServiceBound) {
                                 binding.playButton.isEnabled = true
@@ -135,12 +185,16 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         Constants.MusicLoaded -> {
-                            Log.d(TAG, "MusicLoaded received")
+                            Log.d(TAG, "onReceive.MusicLoaded received")
                             binding.messageText.text = "Music Loaded."
+                            if (isServiceBound) {
+                                binding.playButton.isEnabled = true
+                                binding.pauseButton.isEnabled = false
+                            }
                         }
 
                         else -> {
-                            Log.d(TAG, "Unknown message.")
+                            Log.d(TAG, "onReceive.Unknown message.")
                             binding.messageText.text = "Unknown message."
                         }
                     }
@@ -160,16 +214,26 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onServiceConnected")
                 // Gets an instance of the AIDL interface named IMusicAidlInterface,
                 // which we can use to call on the service
-                myBoundService = IMusicAidlInterface.Stub.asInterface(service)
+                myBoundService = IMusicService.Stub.asInterface(service)
                 isServiceBound = true
                 binding.bindServiceButton.isEnabled = false
                 binding.unbindServiceButton.isEnabled = true
                 binding.playButton.isEnabled = false
                 binding.pauseButton.isEnabled = false
                 myBoundService?.let {
+                    Log.d(TAG, "onServiceConnected.isMusicLoaded = ${it.isMusicLoaded}")
                     if (it.isMusicLoaded) {
                         binding.playButton.isEnabled = !it.isMusicPlaying
                         binding.pauseButton.isEnabled = it.isMusicPlaying
+                    }
+                    try {
+                        it.registerCallback(serviceCallback)
+                    } catch (e: RemoteException) {
+                        // In this case the service has crashed before we could even
+                        // do anything with it; we can count on soon being
+                        // disconnected (and then reconnected if it can be restarted)
+                        // so there is no need to do anything here.
+                        Log.d(TAG, "onServiceConnected.registerCallback(serviceCallback) failed")
                     }
                 }
             }
@@ -177,6 +241,11 @@ class MainActivity : AppCompatActivity() {
             override fun onServiceDisconnected(name: ComponentName) {
                 // This method is not always called
                 Log.d(TAG, "onServiceDisconnected")
+                try {
+                    myBoundService?.unregisterCallback(serviceCallback)
+                } catch (e: RemoteException) {
+                    Log.d(TAG, "onServiceDisconnected.registerCallback(serviceCallback) failed")
+                }
                 myBoundService = null
                 isServiceBound = false
                 binding.bindServiceButton.isEnabled = true
@@ -215,6 +284,11 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "unbindMusicService")
         Toast.makeText(this, "Unbinding ...", Toast.LENGTH_SHORT).show()
         if (isServiceBound) {
+            try {
+                myBoundService?.unregisterCallback(serviceCallback)
+            } catch (e: RemoteException) {
+                Log.d(TAG, "unbindMusicService.registerCallback(serviceCallback) failed")
+            }
             unbindService(myServiceConnection)
             myBoundService = null
             isServiceBound = false
