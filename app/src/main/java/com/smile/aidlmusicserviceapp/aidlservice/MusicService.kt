@@ -17,11 +17,9 @@ import com.smile.aidlmusicserviceapp.IMusicService
 import com.smile.aidlmusicserviceapp.IMusicServiceCallback
 import com.smile.aidlmusicserviceapp.R
 
-
 class MusicService : Service() {
     companion object {
         private const val TAG : String = "MusicService"
-        private const val REPORT_MSG = 1
     }
 
     /**
