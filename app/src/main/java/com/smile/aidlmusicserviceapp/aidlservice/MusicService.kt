@@ -170,7 +170,7 @@ class MusicService : Service() {
     }
 
     private fun broadcastResult(result: Int) {
-        Log.d(TAG, "broadcastResult")
+        Log.d(TAG, "broadcastResult.result = $result")
         val broadcastIntent = Intent(Constants.ServiceName)
         val extras = Bundle()
         extras.putInt(Constants.Result, result)

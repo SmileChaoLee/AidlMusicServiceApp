@@ -21,7 +21,7 @@ import com.smile.aidlmusicserviceapp.model.RecentStatus
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "IBinderActivity"
+        private const val TAG = "MainActivity"
     }
     private lateinit var binding : ActivityMainBinding
     private lateinit var receiver: BroadcastReceiver
@@ -52,11 +52,21 @@ class MainActivity : AppCompatActivity() {
 
                 Constants.MusicPlaying -> {
                     Log.d(TAG, "serviceCallback.MusicPlaying received")
+                    if (isServiceBound) {
+                        RecentStatus.status.messageText = "Music playing."
+                        RecentStatus.status.playResult = Constants.ErrorCode
+                        RecentStatus.status.pauseResult = Constants.PauseMusic
+                    }
                     "MusicPlaying received"
                 }
 
                 Constants.MusicPaused -> {
                     Log.d(TAG, "serviceCallback.MusicPaused received")
+                    if (isServiceBound) {
+                        RecentStatus.status.messageText = "Music paused."
+                        RecentStatus.status.playResult = Constants.PlayMusic
+                        RecentStatus.status.pauseResult = Constants.ErrorCode
+                    }
                     "MusicPaused received"
                 }
 
@@ -142,20 +152,12 @@ class MainActivity : AppCompatActivity() {
 
                         Constants.ServiceBound -> {
                             Log.d(TAG, "onReceive.ServiceBound received")
-                            RecentStatus.status.messageText = "BoundService Bound."
-                            RecentStatus.status.bindEnabled = false
-                            RecentStatus.status.unbindEnabled = true
-                            RecentStatus.status.playResult = Constants.PlayMusic
-                            RecentStatus.status.pauseResult = Constants.ErrorCode
+                            RecentStatus.status.messageText = "Service Bound."
                         }
 
                         Constants.ServiceUnbound -> {
                             Log.d(TAG, "onReceive.ServiceUnbound received")
-                            RecentStatus.status.messageText = "BoundService unbound."
-                            RecentStatus.status.bindEnabled = true
-                            RecentStatus.status.unbindEnabled = false
-                            RecentStatus.status.playResult = Constants.ErrorCode
-                            RecentStatus.status.pauseResult = Constants.ErrorCode
+                            RecentStatus.status.messageText = "Service Unbound."
                         }
 
                         Constants.ServiceStopped -> {
@@ -169,20 +171,10 @@ class MainActivity : AppCompatActivity() {
 
                         Constants.MusicPlaying -> {
                             Log.d(TAG, "onReceive.MusicPlaying received")
-                            RecentStatus.status.messageText = "Music playing."
-                            if (isServiceBound) {
-                                RecentStatus.status.playResult = Constants.ErrorCode
-                                RecentStatus.status.pauseResult = Constants.PauseMusic
-                            }
                         }
 
                         Constants.MusicPaused -> {
                             Log.d(TAG, "onReceive.MusicPaused received")
-                            RecentStatus.status.messageText = "Music paused."
-                            if (isServiceBound) {
-                                RecentStatus.status.playResult = Constants.PlayMusic
-                                RecentStatus.status.pauseResult = Constants.ErrorCode
-                            }
                         }
 
                         Constants.MusicStopped -> {
@@ -265,6 +257,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 myBoundService = null
                 isServiceBound = false
+                RecentStatus.status.messageText = "Service Unbound."
                 RecentStatus.status.bindEnabled = true
                 RecentStatus.status.unbindEnabled = false
                 RecentStatus.status.pauseResult = Constants.ErrorCode
@@ -283,12 +276,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         Log.d(TAG, "onResume")
-        Log.d(TAG, "onResume.messageText = ${RecentStatus.status.messageText}")
-        Log.d(TAG, "onResume.bindEnabled = ${RecentStatus.status.bindEnabled}")
-        Log.d(TAG, "onResume.unbindEnabled = ${RecentStatus.status.unbindEnabled}")
-        Log.d(TAG, "onResume.playResult = ${RecentStatus.status.playResult}")
-        Log.d(TAG, "onResume.pauseResult = ${RecentStatus.status.pauseResult}")
-        Log.d(TAG, "onResume.serverText = ${RecentStatus.status.serverText}")
         super.onResume()
     }
 
@@ -307,6 +294,7 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    @Deprecated("Deprecated in Java", ReplaceWith("finish()"))
     override fun onBackPressed() {
         finish()
     }
@@ -323,6 +311,7 @@ class MainActivity : AppCompatActivity() {
             unbindService(myServiceConnection)
             myBoundService = null
             isServiceBound = false
+            RecentStatus.status.messageText = "Service Unbound."
             RecentStatus.status.bindEnabled = true
             RecentStatus.status.unbindEnabled = false
             RecentStatus.status.pauseResult = Constants.ErrorCode
@@ -335,11 +324,24 @@ class MainActivity : AppCompatActivity() {
     private fun bindMusicService() {
         Log.d(TAG, "bindMusicService")
         Toast.makeText(this, "Binding ...", Toast.LENGTH_SHORT).show()
+        /*
         if (!isServiceBound) {
             val bindServiceIntent = Intent(this, MusicService::class.java)
             // parameters for this Intent
-            Log.d(TAG, "bindMusicServiceis.Binding")
+            Log.d(TAG, "bindMusicService.Binding to MusicService")
             isServiceBound = bindService(bindServiceIntent, myServiceConnection, BIND_AUTO_CREATE)
+        }
+        */
+        // OR
+        if (!isServiceBound) {
+            val bindServiceIntent = Intent("AidlMusicService")
+            val packName = IMusicService::class.java.packageName
+            Log.d(TAG, "bindMusicService.packName = $packName")
+            packName?.let {
+                bindServiceIntent.setPackage(it)
+                Log.d(TAG, "bindMusicService.Binding to MusicService")
+                isServiceBound = bindService(bindServiceIntent, myServiceConnection, BIND_AUTO_CREATE)
+            }
         }
         Log.d(TAG, "bindMusicServiceis.ServiceBound = $isServiceBound")
     }
