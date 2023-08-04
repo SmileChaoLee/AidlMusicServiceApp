@@ -5,6 +5,7 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.os.Message
@@ -103,23 +104,19 @@ class MusicService : Service() {
         }
     }
 
-    /**
-     * Our Handler used to execute operations on the main thread.  This is used
-     * to schedule increments of our value.
-     */
-    private val mMessageHandler: Handler = object : Handler(Looper.getMainLooper()) {
+    inner class MessageHandler(looper: Looper): Handler(looper) {
         override fun handleMessage(msg: Message) {
             val n: Int = serviceCallbacks.beginBroadcast()
-            Log.d(TAG, "mMessageHandler.Broadcast message to all clients.n = $n")
+            Log.d(TAG, "MessageHandler.Broadcast message to all clients.n = $n")
             var i = 0
             while (i < n) {
-                Log.d(TAG, "mMessageHandler.Broadcast message.i = $i")
+                Log.d(TAG, "MessageHandler.Broadcast message.i = $i")
                 try {
                     serviceCallbacks.getBroadcastItem(i).valueChanged(msg.what)
                 } catch (e: RemoteException) {
                     // The RemoteCallbackList will take care of removing
                     // the dead object for us.
-                    Log.d(TAG, "mMessageHandler.Failed to broadcast")
+                    Log.d(TAG, "MessageHandler.Failed to broadcast")
                 }
                 i++
             }
@@ -127,8 +124,17 @@ class MusicService : Service() {
         }
     }
 
+    /**
+     * Our Handler used to execute operations on the main thread.  This is used
+     * to schedule increments of our value.
+     */
+    private lateinit var mMessageHandler: Handler
+
     override fun onCreate() {
         Log.d(TAG, "onCreate()")
+        val handlerThread = HandlerThread("CallbackHandlerThread")
+        handlerThread.start()
+        mMessageHandler = MessageHandler(handlerThread.looper)
         loadMusic()
         super.onCreate()
     }
