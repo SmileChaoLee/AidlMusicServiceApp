@@ -48,8 +48,9 @@ class MusicService : Service() {
             }
             Log.d(TAG, "playMusic.result = $result")
             broadcastResult(result)
-            val message : Message = Message.obtain(null, result, 0, 0)
-            mMessageHandler.sendMessage(message)
+            // val message : Message = Message.obtain(null, result, 0, 0)
+            // mMessageHandler.sendMessage(message)
+            callCallback(result)
             return result
         }
 
@@ -66,8 +67,9 @@ class MusicService : Service() {
             }
             Log.d(TAG, "pauseMusic.result = $result")
             broadcastResult(result)
-            val message : Message = Message.obtain(null, result, 0, 0)
-            mMessageHandler.sendMessage(message)
+            // val message : Message = Message.obtain(null, result, 0, 0)
+            // mMessageHandler.sendMessage(message)
+            callCallback(result)
             return result
         }
 
@@ -80,8 +82,9 @@ class MusicService : Service() {
             }
             Log.d(TAG, "stopMusic.result = $result")
             broadcastResult(result)
-            val message : Message = Message.obtain(null, result, 0, 0)
-            mMessageHandler.sendMessage(message)
+            // val message : Message = Message.obtain(null, result, 0, 0)
+            // mMessageHandler.sendMessage(message)
+            callCallback(result)
             return result
         }
 
@@ -185,5 +188,23 @@ class MusicService : Service() {
             baseContext
         )
         localBroadcastManager.sendBroadcast(broadcastIntent)
+    }
+
+    private fun callCallback(result: Int) {
+        val n: Int = serviceCallbacks.beginBroadcast()
+        Log.d(TAG, "callCallback.Broadcast to all clients.n = $n")
+        var i = 0
+        while (i < n) {
+            Log.d(TAG, "callCallback.Broadcast i = $i")
+            try {
+                serviceCallbacks.getBroadcastItem(i).valueChanged(result)
+            } catch (e: RemoteException) {
+                // The RemoteCallbackList will take care of removing
+                // the dead object for us.
+                Log.d(TAG, "callCallback.Failed to broadcast")
+            }
+            i++
+        }
+        serviceCallbacks.finishBroadcast()
     }
 }
