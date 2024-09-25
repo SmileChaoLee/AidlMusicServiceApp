@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.smile.aidlmusicserviceapp.aidlservice.MusicService
 import com.smile.aidlmusicserviceapp.databinding.ActivityMainBinding
 import com.smile.aidlmusicserviceapp.model.RecentStatus
 
@@ -96,6 +95,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        // OR
         // binding = ActivityMainBinding.inflate(layoutInflater)
         // setContentView(binding.root)
 
