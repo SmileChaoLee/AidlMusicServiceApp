@@ -48,9 +48,6 @@ class MusicService : Service() {
             }
             Log.d(TAG, "playMusic.result = $result")
             broadcastResult(result)
-            // val message : Message = Message.obtain(null, result, 0, 0)
-            // mMessageHandler.sendMessage(message)
-            callCallback(result)
             return result
         }
 
@@ -67,9 +64,9 @@ class MusicService : Service() {
             }
             Log.d(TAG, "pauseMusic.result = $result")
             broadcastResult(result)
-            // val message : Message = Message.obtain(null, result, 0, 0)
-            // mMessageHandler.sendMessage(message)
-            callCallback(result)
+            val message : Message = Message.obtain(null, result, 0, 0)
+            mMessageHandler.sendMessage(message)
+            // callCallback(result)
             return result
         }
 
@@ -82,9 +79,9 @@ class MusicService : Service() {
             }
             Log.d(TAG, "stopMusic.result = $result")
             broadcastResult(result)
-            // val message : Message = Message.obtain(null, result, 0, 0)
-            // mMessageHandler.sendMessage(message)
-            callCallback(result)
+            val message : Message = Message.obtain(null, result, 0, 0)
+            mMessageHandler.sendMessage(message)
+            // callCallback(result)
             return result
         }
 

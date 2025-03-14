@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace 'com.smile.aidlmusicserviceapp'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.smile.aidlmusicserviceapp"
