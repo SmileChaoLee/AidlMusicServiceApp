@@ -18,7 +18,7 @@ object Constants {
     const val AskStatus = 201
     const val MusicStatus = 202
     const val Result = "RESULT"
-    const val MyBoundServiceChannelName = ServiceName + ".ANDROID"
-    const val MyBoundServiceChannelID = ServiceName + ".CHANNEL_ID"
+    const val MyBoundServiceChannelName = "$ServiceName.ANDROID"
+    const val MyBoundServiceChannelID = "$ServiceName.CHANNEL_ID"
     const val MyBoundServiceNotificationID = 1
 }
