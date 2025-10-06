@@ -12,9 +12,10 @@ import android.os.IBinder.DeathRecipient
 import android.os.RemoteException
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+// import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.smile.aidlmusicserviceapp.databinding.ActivityMainBinding
 import com.smile.aidlmusicserviceapp.model.RecentStatus
 
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
     }
     private lateinit var binding : ActivityMainBinding
-    private lateinit var receiver: BroadcastReceiver
+    // private lateinit var receiver: BroadcastReceiver
 
     private val serviceCallback = object : IMusicServiceCallback.Stub() {
         override fun valueChanged(value: Int) {
@@ -129,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
+        /*
         receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent == null) {
@@ -208,6 +210,7 @@ class MainActivity : AppCompatActivity() {
         filter.addAction(Constants.ServiceName)
         val localBroadcastManager = LocalBroadcastManager.getInstance(this)
         localBroadcastManager.registerReceiver(receiver, filter)
+        */
 
         deathRecipient = DeathRecipient { Log.d(TAG, "binderDied") }
 
@@ -236,7 +239,7 @@ class MainActivity : AppCompatActivity() {
                         // do anything with it; we can count on soon being
                         // disconnected (and then reconnected if it can be restarted)
                         // so there is no need to do anything here.
-                        Log.d(TAG, "onServiceConnected.registerCallback(serviceCallback) failed")
+                        Log.e(TAG, "onServiceConnected.registerCallback(serviceCallback) failed", e)
                     }
                 }
                 RecentStatus.status.messageText = "Service Bound."
@@ -253,7 +256,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     myBoundService?.unregisterCallback(serviceCallback)
                 } catch (e: RemoteException) {
-                    Log.d(TAG, "onServiceDisconnected.registerCallback(serviceCallback) failed")
+                    Log.e(TAG, "onServiceDisconnected.registerCallback(serviceCallback) failed", e)
                 }
                 myBoundService = null
                 isServiceBound = false
@@ -267,6 +270,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         bindMusicService()
+
+        onBackPressedDispatcher.addCallback(object
+            : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                myOnBackPressed()
+            }
+        })
     }
 
     override fun onStart() {
@@ -289,13 +299,12 @@ class MainActivity : AppCompatActivity() {
         unbindMusicService()
         // unregisterReceiver(receiver);    // use global broadcast receiver
         // local un-registration
-        val localBroadcastManager = LocalBroadcastManager.getInstance(this)
-        localBroadcastManager.unregisterReceiver(receiver)
+        // val localBroadcastManager = LocalBroadcastManager.getInstance(this)
+        // localBroadcastManager.unregisterReceiver(receiver)
         super.onDestroy()
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("finish()"))
-    override fun onBackPressed() {
+    fun myOnBackPressed() {
         finish()
     }
 
@@ -306,7 +315,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 myBoundService?.unregisterCallback(serviceCallback)
             } catch (e: RemoteException) {
-                Log.d(TAG, "unbindMusicService.registerCallback(serviceCallback) failed")
+                Log.e(TAG, "unbindMusicService.registerCallback(serviceCallback) failed", e)
             }
             unbindService(myServiceConnection)
             myBoundService = null
@@ -337,12 +346,12 @@ class MainActivity : AppCompatActivity() {
             val bindServiceIntent = Intent("AidlMusicService")
             val packName = IMusicService::class.java.packageName
             Log.d(TAG, "bindMusicService.packName = $packName")
-            packName?.let {
+            packName.let {
                 bindServiceIntent.setPackage(it)
                 Log.d(TAG, "bindMusicService.Binding to MusicService")
                 isServiceBound = bindService(bindServiceIntent, myServiceConnection, BIND_AUTO_CREATE)
             }
         }
-        Log.d(TAG, "bindMusicServiceis.ServiceBound = $isServiceBound")
+        Log.d(TAG, "bindMusicServices.ServiceBound = $isServiceBound")
     }
 }

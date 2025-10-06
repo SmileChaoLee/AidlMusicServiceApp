@@ -3,7 +3,6 @@ package com.smile.aidlmusicserviceapp.aidlservice
 import android.app.Service
 import android.content.Intent
 import android.media.MediaPlayer
-import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
@@ -12,7 +11,7 @@ import android.os.Message
 import android.os.RemoteCallbackList
 import android.os.RemoteException
 import android.util.Log
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+// import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.smile.aidlmusicserviceapp.Constants
 import com.smile.aidlmusicserviceapp.IMusicService
 import com.smile.aidlmusicserviceapp.IMusicServiceCallback
@@ -64,9 +63,6 @@ class MusicService : Service() {
             }
             Log.d(TAG, "pauseMusic.result = $result")
             broadcastResult(result)
-            val message : Message = Message.obtain(null, result, 0, 0)
-            mMessageHandler.sendMessage(message)
-            // callCallback(result)
             return result
         }
 
@@ -79,9 +75,6 @@ class MusicService : Service() {
             }
             Log.d(TAG, "stopMusic.result = $result")
             broadcastResult(result)
-            val message : Message = Message.obtain(null, result, 0, 0)
-            mMessageHandler.sendMessage(message)
-            // callCallback(result)
             return result
         }
 
@@ -106,6 +99,9 @@ class MusicService : Service() {
 
     inner class MessageHandler(looper: Looper): Handler(looper) {
         override fun handleMessage(msg: Message) {
+            val result = msg.what
+            callCallback(result)
+            /*
             val n: Int = serviceCallbacks.beginBroadcast()
             Log.d(TAG, "MessageHandler.Broadcast message to all clients.n = $n")
             var i = 0
@@ -121,6 +117,7 @@ class MusicService : Service() {
                 i++
             }
             serviceCallbacks.finishBroadcast()
+            */
         }
     }
 
@@ -177,14 +174,10 @@ class MusicService : Service() {
 
     private fun broadcastResult(result: Int) {
         Log.d(TAG, "broadcastResult.result = $result")
-        val broadcastIntent = Intent(Constants.ServiceName)
-        val extras = Bundle()
-        extras.putInt(Constants.Result, result)
-        broadcastIntent.putExtras(extras)
-        val localBroadcastManager = LocalBroadcastManager.getInstance(
-            baseContext
-        )
-        localBroadcastManager.sendBroadcast(broadcastIntent)
+        callCallback(result)
+        // or use mMessageHandler
+        // val message : Message = Message.obtain(null, result, 0, 0)
+        // mMessageHandler.sendMessage(message)
     }
 
     private fun callCallback(result: Int) {
@@ -198,7 +191,7 @@ class MusicService : Service() {
             } catch (e: RemoteException) {
                 // The RemoteCallbackList will take care of removing
                 // the dead object for us.
-                Log.d(TAG, "callCallback.Failed to broadcast")
+                Log.e(TAG, "callCallback.Failed to broadcast", e)
             }
             i++
         }
